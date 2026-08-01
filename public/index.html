@@ -254,12 +254,12 @@
     async function connectWallet() {
       try {
         // Only use real MetaMask
-        if (!window.ethereum || !window.ethereum.isMetaMask) {
-          alert('MetaMask not detected. Please install MetaMask.');
+        if (!window.ethereum || window.ethereum.isMetaMask !== true) {
+          alert('MetaMask not found. Please install MetaMask.');
           return;
         }
 
-        // This line opens the real MetaMask popup
+        // This opens the real MetaMask popup
         const accounts = await window.ethereum.request({ 
           method: 'eth_requestAccounts' 
         });
