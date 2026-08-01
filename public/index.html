@@ -278,13 +278,30 @@
     }
 
     async function connectWallet() {
-      if (!window.ethereum) {
-        alert('Please install MetaMask or another wallet');
+      // Prefer MetaMask / EVM provider
+      let provider = window.ethereum;
+
+      if (!provider) {
+        alert('No EVM wallet detected. Please install MetaMask.');
         return;
       }
 
+      // If multiple providers exist, prefer MetaMask
+      if (window.ethereum.providers) {
+        provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum;
+      }
+
+      if (!provider.isMetaMask) {
+        const useAnyway = confirm(
+          'Non-EVM wallet detected (possibly Argent X or Starknet wallet).\n\n' +
+          'Vortex requires an EVM wallet (MetaMask recommended).\n\n' +
+          'Click OK to try anyway, or Cancel to install MetaMask.'
+        );
+        if (!useAnyway) return;
+      }
+
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
         document.getElementById('connect-text').innerHTML = 
           connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
@@ -302,17 +319,17 @@
         };
 
         try {
-          await window.ethereum.request({
+          await provider.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: ritualChain.chainId }]
           });
         } catch (switchError) {
           if (switchError.code === 4902) {
-            await window.ethereum.request({
+            await provider.request({
               method: 'wallet_addEthereumChain',
               params: [ritualChain]
             });
-            await window.ethereum.request({
+            await provider.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId: ritualChain.chainId }]
             });
@@ -321,7 +338,7 @@
           }
         }
 
-        console.log('%c[Wallet] Connected to Ritual testnet', 'color:#22c55e');
+        console.log('%c[Wallet] Connected to Ritual testnet via EVM wallet', 'color:#22c55e');
         await refreshState();
 
       } catch (err) {
