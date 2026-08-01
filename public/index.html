@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <!-- How it works - User Focused -->
+    <!-- How it works -->
     <div id="how" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
       <div class="text-center mb-14">
         <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">FROM DEPOSIT TO OPTIMIZED YIELD</div>
@@ -108,45 +108,37 @@
       </div>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Step 1: Deposit -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
             <i class="fa-solid fa-wallet text-3xl"></i>
           </div>
           <h3 class="font-semibold text-2xl mb-3">1. Deposit</h3>
-          <p class="text-white/60">Users deposit USDC (or MockUSDC) into the RitualVault or BaseVault. They receive vault shares representing their position.</p>
+          <p class="text-white/60">Users deposit USDC (Base Sepolia or ARC USDC) into the vault. They receive shares representing their position.</p>
         </div>
 
-        <!-- Step 2: Autonomous Oracle -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
             <i class="fa-solid fa-robot text-3xl"></i>
           </div>
           <h3 class="font-semibold text-2xl mb-3">2. Autonomous Oracle</h3>
-          <p class="text-white/60">Every few blocks the Scheduler automatically triggers the oracle. It fetches live yields via HTTP precompile and runs an ONNX model to calculate optimal allocation weights.</p>
+          <p class="text-white/60">The Scheduler automatically triggers the oracle. It fetches live yields via HTTP precompile and runs an ONNX model to calculate optimal weights.</p>
         </div>
 
-        <!-- Step 3: Rebalance Suggested -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
             <i class="fa-solid fa-lightbulb text-3xl"></i>
           </div>
           <h3 class="font-semibold text-2xl mb-3">3. Rebalance Suggested</h3>
-          <p class="text-white/60">The oracle emits a <code>RebalanceSuggested</code> event with new target weights (in basis points). This happens fully on-chain with no keepers.</p>
+          <p class="text-white/60">The oracle emits a <code>RebalanceSuggested</code> event with new target weights. Everything happens fully on-chain.</p>
         </div>
 
-        <!-- Step 4: Optimized Yield -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
             <i class="fa-solid fa-chart-line text-3xl"></i>
           </div>
           <h3 class="font-semibold text-2xl mb-3">4. Optimized Yield</h3>
-          <p class="text-white/60">A rebalancer (current or future) uses the suggested weights to move funds across protocols, maximizing yield for all depositors automatically.</p>
+          <p class="text-white/60">A rebalancer uses the suggested weights to move funds across protocols, maximizing yield for all depositors.</p>
         </div>
-      </div>
-
-      <div class="text-center mt-12 text-white/60 max-w-lg mx-auto">
-        Everything — from yield data fetching to weight calculation — happens entirely on Ritual Chain using native precompiles. No off-chain servers or keepers required.
       </div>
     </div>
 
@@ -198,13 +190,11 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Allocation Targets -->
         <div class="lg:col-span-2">
           <div class="text-white/50 text-sm mb-4">CURRENT ALLOCATION TARGETS</div>
           <div id="targets-container" class="space-y-4"></div>
         </div>
 
-        <!-- Last Update -->
         <div>
           <div class="text-white/50 text-sm mb-4">LAST UPDATE</div>
           <div id="last-update" class="font-mono text-4xl font-semibold">—</div>
@@ -217,7 +207,6 @@
         </div>
       </div>
 
-      <!-- Scheduler -->
       <div class="mt-10 pt-8 border-t border-white/10">
         <div class="font-semibold mb-4">Scheduler Status</div>
         <div class="grid grid-cols-2 gap-6 text-sm">
@@ -229,6 +218,23 @@
             <span class="text-white/60">Frequency</span>
             <span id="frequency" class="font-mono">— blocks</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deposit Options -->
+    <div class="mt-8 glass border border-white/10 rounded-3xl p-8">
+      <div class="font-semibold text-xl mb-4">Deposit Options</div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="border border-white/10 rounded-2xl p-5">
+          <div class="font-medium">Base Sepolia USDC</div>
+          <div class="font-mono text-sm text-emerald-400 mt-1">0x036CbD53842c5426634e7929541eC2318f3dCF7e</div>
+          <div class="text-xs text-white/50 mt-2">Real USDC on Base Sepolia</div>
+        </div>
+        <div class="border border-white/10 rounded-2xl p-5">
+          <div class="font-medium">ARC USDC (Testnet)</div>
+          <div class="font-mono text-sm text-emerald-400 mt-1">Coming soon</div>
+          <div class="text-xs text-white/50 mt-2">Additional USDC option for testing</div>
         </div>
       </div>
     </div>
@@ -273,16 +279,46 @@
 
     async function connectWallet() {
       if (!window.ethereum) {
-        alert('Please install MetaMask');
+        alert('Please install MetaMask or another wallet');
         return;
       }
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      connectedAccount = accounts[0];
-      document.getElementById('connect-text').innerHTML = connectedAccount.slice(0,6) + '...' + connectedAccount.slice(-4);
-      
+
       try {
-        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x7bb' }] });
-      } catch (e) {}
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        connectedAccount = accounts[0];
+        document.getElementById('connect-text').innerHTML = 
+          connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
+
+        // Add + switch to Ritual testnet
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x7bb' }],
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x7bb',
+                chainName: 'Ritual Testnet',
+                nativeCurrency: { name: 'Ritual', symbol: 'RITUAL', decimals: 18 },
+                rpcUrls: ['https://rpc.ritualfoundation.org'],
+                blockExplorerUrls: ['https://explorer.ritualfoundation.org'],
+              }],
+            });
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x7bb' }],
+            });
+          }
+        }
+        
+        await refreshState();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to connect wallet. Check console for details.');
+      }
     }
 
     async function refreshState() {
