@@ -9,7 +9,7 @@
   <script src="https://unpkg.com/viem@2.21.0/dist/index.global.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
-    body { font-family: 'Inter', system-ui, sans-serif; }
+    body { font-family: 'Inter', system_ui, sans-serif; }
     .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); }
     .allocation-bar { height: 8px; background: linear-gradient(to right, #6366f1, #a855f7); border-radius: 9999px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -100,37 +100,53 @@
       </div>
     </div>
 
-    <!-- How it works -->
+    <!-- How it works - User Focused -->
     <div id="how" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
       <div class="text-center mb-14">
-        <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">AUTONOMOUS BY DESIGN</div>
+        <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">FROM DEPOSIT TO OPTIMIZED YIELD</div>
         <h2 class="text-5xl font-display tracking-tighter mt-3">How Vortex Works</h2>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Step 1: Deposit -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
-            <i class="fa-solid fa-clock text-3xl"></i>
+            <i class="fa-solid fa-wallet text-3xl"></i>
           </div>
-          <h3 class="font-semibold text-2xl mb-3">1. Scheduler Tick</h3>
-          <p class="text-white/60">The Ritual Scheduler automatically calls <code>tick()</code> at configurable intervals with zero off-chain keepers.</p>
+          <h3 class="font-semibold text-2xl mb-3">1. Deposit</h3>
+          <p class="text-white/60">Users deposit USDC (or MockUSDC) into the RitualVault or BaseVault. They receive vault shares representing their position.</p>
         </div>
-        
+
+        <!-- Step 2: Autonomous Oracle -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
-            <i class="fa-solid fa-globe text-3xl"></i>
+            <i class="fa-solid fa-robot text-3xl"></i>
           </div>
-          <h3 class="font-semibold text-2xl mb-3">2. Live Yield Data</h3>
-          <p class="text-white/60">HTTP precompile fetches real-time APY + volatility from public yield APIs.</p>
+          <h3 class="font-semibold text-2xl mb-3">2. Autonomous Oracle</h3>
+          <p class="text-white/60">Every few blocks the Scheduler automatically triggers the oracle. It fetches live yields via HTTP precompile and runs an ONNX model to calculate optimal allocation weights.</p>
         </div>
-        
+
+        <!-- Step 3: Rebalance Suggested -->
         <div class="glass border border-white/10 rounded-3xl p-8">
           <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
-            <i class="fa-solid fa-brain text-3xl"></i>
+            <i class="fa-solid fa-lightbulb text-3xl"></i>
           </div>
-          <h3 class="font-semibold text-2xl mb-3">3. ONNX Inference</h3>
-          <p class="text-white/60">ONNX precompile runs the allocation model and outputs optimal weights in basis points.</p>
+          <h3 class="font-semibold text-2xl mb-3">3. Rebalance Suggested</h3>
+          <p class="text-white/60">The oracle emits a <code>RebalanceSuggested</code> event with new target weights (in basis points). This happens fully on-chain with no keepers.</p>
         </div>
+
+        <!-- Step 4: Optimized Yield -->
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+            <i class="fa-solid fa-chart-line text-3xl"></i>
+          </div>
+          <h3 class="font-semibold text-2xl mb-3">4. Optimized Yield</h3>
+          <p class="text-white/60">A rebalancer (current or future) uses the suggested weights to move funds across protocols, maximizing yield for all depositors automatically.</p>
+        </div>
+      </div>
+
+      <div class="text-center mt-12 text-white/60 max-w-lg mx-auto">
+        Everything — from yield data fetching to weight calculation — happens entirely on Ritual Chain using native precompiles. No off-chain servers or keepers required.
       </div>
     </div>
 
@@ -251,8 +267,6 @@
         test.classList.remove('hidden');
         overviewTab.classList.remove('tab-active');
         testTab.classList.add('tab-active');
-        
-        // Auto refresh when switching to test tab
         refreshState();
       }
     }
@@ -311,9 +325,7 @@
       }
     }
 
-    // Boot
     window.onload = () => {
-      // Default to Overview tab
       document.getElementById('overview-content').classList.remove('hidden');
       document.getElementById('test-content').classList.add('hidden');
     };
