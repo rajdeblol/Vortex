@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vortex • Live Yield Oracle</title>
+  <title>Vortex • Autonomous Yield Optimizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://unpkg.com/viem@2.21.0/dist/index.global.js"></script>
@@ -12,14 +12,14 @@
     body { font-family: 'Inter', system-ui, sans-serif; }
     .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); }
-    .metric { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     .allocation-bar { height: 8px; background: linear-gradient(to right, #6366f1, #a855f7); border-radius: 9999px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tab-active { border-bottom: 3px solid #6366f1; color: white; font-weight: 600; }
   </style>
 </head>
 <body class="bg-zinc-950 text-white">
   <!-- Navbar -->
   <nav class="border-b border-white/10 sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-lg">
-    <div class="max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-screen-xl mx-auto px-6 py-5 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
         <div class="w-9 h-9 bg-indigo-600 rounded-2xl flex items-center justify-center">
           <i class="fa-solid fa-infinity text-white text-2xl"></i>
@@ -27,126 +27,205 @@
         <span class="font-display text-3xl font-semibold tracking-tighter">Vortex</span>
       </div>
       
-      <div class="flex items-center gap-x-3">
-        <button onclick="connectWallet()" 
-                id="connect-btn"
-                class="px-5 py-2 rounded-2xl border border-white/20 hover:bg-white/5 transition-all flex items-center gap-x-2 text-sm">
-          <i class="fa-solid fa-wallet"></i>
-          <span id="connect-text">Connect Wallet</span>
-        </button>
-        <a href="https://github.com/rajdeblol/Vortex" target="_blank"
-           class="px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm flex items-center gap-x-2">
-          <i class="fa-brands fa-github"></i>
-        </a>
+      <div class="flex items-center gap-x-8 text-sm">
+        <a href="#how" class="hover:text-white/70 transition-colors">How it works</a>
+        <a href="#contracts" class="hover:text-white/70 transition-colors">Contracts</a>
+        <a href="https://github.com/rajdeblol/Vortex" target="_blank" class="hover:text-white/70 transition-colors">GitHub</a>
       </div>
+
+      <button onclick="connectWallet()" 
+              id="connect-btn"
+              class="px-5 py-2.5 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm flex items-center gap-x-2">
+        <i class="fa-solid fa-wallet"></i>
+        <span id="connect-text">Connect Wallet</span>
+      </button>
     </div>
   </nav>
 
-  <div class="max-w-screen-xl mx-auto px-6 pt-12 pb-20">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-10">
-      <div>
-        <div class="inline-flex items-center gap-x-2 px-4 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm mb-3">
-          <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-          LIVE ON RITUAL TESTNET
+  <!-- Hero -->
+  <div class="max-w-screen-xl mx-auto px-6 pt-20 pb-16 text-center">
+    <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-full border border-white/10 mb-6">
+      <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+      <span class="text-sm text-emerald-400 font-medium">Live on Ritual Testnet</span>
+    </div>
+
+    <h1 class="text-7xl font-display tracking-tighter leading-none mb-4">
+      Autonomous Yield.<br>
+      <span class="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Fully On-Chain.</span>
+    </h1>
+    
+    <p class="max-w-md mx-auto text-xl text-white/60 mb-10">
+      The first fully autonomous cross-chain yield optimizer running natively on Ritual Chain.
+    </p>
+
+    <div class="flex items-center justify-center gap-x-4">
+      <button onclick="document.getElementById('test-tab').click()" 
+              class="px-8 py-4 rounded-3xl bg-white text-black font-semibold hover:bg-white/90 transition-all flex items-center gap-x-3">
+        <span>Test it now</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+      <a href="#how" class="px-8 py-4 rounded-3xl border border-white/20 hover:bg-white/5 transition-all flex items-center gap-x-3">
+        <span>Learn how it works</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="max-w-screen-xl mx-auto px-6">
+    <div class="flex border-b border-white/10 mb-10">
+      <button onclick="switchTab(0)" id="overview-tab"
+              class="tab-active px-8 py-4 text-lg font-medium">Overview</button>
+      <button onclick="switchTab(1)" id="test-tab"
+              class="px-8 py-4 text-lg font-medium text-white/60 hover:text-white">Test it</button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div id="overview-content">
+    <!-- Stats -->
+    <div class="max-w-screen-xl mx-auto px-6 pb-20">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="text-4xl font-display tracking-tighter">100%</div>
+          <div class="text-white/60 mt-1">On-chain autonomous</div>
         </div>
-        <h1 class="font-display text-6xl tracking-tighter">Live Yield Oracle</h1>
-        <p class="text-xl text-white/60 mt-2">Fully autonomous cross-chain yield optimizer</p>
-      </div>
-      <div class="text-right">
-        <div class="text-sm text-white/50">Chain ID</div>
-        <div class="font-mono text-2xl font-semibold">1979</div>
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="text-4xl font-display tracking-tighter">1M</div>
+          <div class="text-white/60 mt-1">Token context window</div>
+        </div>
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="text-4xl font-display tracking-tighter">1979</div>
+          <div class="text-white/60 mt-1">Ritual Chain ID</div>
+        </div>
       </div>
     </div>
 
-    <!-- Oracle Status -->
-    <div class="glass border border-white/10 rounded-3xl p-8 mb-8">
-      <div class="flex items-center justify-between mb-6">
-        <div class="font-semibold text-xl flex items-center gap-x-3">
-          <i class="fa-solid fa-satellite text-indigo-400"></i>
-          <span>Oracle Status</span>
+    <!-- How it works -->
+    <div id="how" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
+      <div class="text-center mb-14">
+        <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">AUTONOMOUS BY DESIGN</div>
+        <h2 class="text-5xl font-display tracking-tighter mt-3">How Vortex Works</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+            <i class="fa-solid fa-clock text-3xl"></i>
+          </div>
+          <h3 class="font-semibold text-2xl mb-3">1. Scheduler Tick</h3>
+          <p class="text-white/60">The Ritual Scheduler automatically calls <code>tick()</code> at configurable intervals with zero off-chain keepers.</p>
+        </div>
+        
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+            <i class="fa-solid fa-globe text-3xl"></i>
+          </div>
+          <h3 class="font-semibold text-2xl mb-3">2. Live Yield Data</h3>
+          <p class="text-white/60">HTTP precompile fetches real-time APY + volatility from public yield APIs.</p>
+        </div>
+        
+        <div class="glass border border-white/10 rounded-3xl p-8">
+          <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+            <i class="fa-solid fa-brain text-3xl"></i>
+          </div>
+          <h3 class="font-semibold text-2xl mb-3">3. ONNX Inference</h3>
+          <p class="text-white/60">ONNX precompile runs the allocation model and outputs optimal weights in basis points.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contracts -->
+    <div id="contracts" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
+      <div class="flex items-end justify-between mb-8">
+        <div>
+          <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">DEPLOYED ON RITUAL</div>
+          <h2 class="text-5xl font-display tracking-tighter">Live Contracts</h2>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900 border border-white/10 rounded-3xl p-8 font-mono text-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6">
+          <div>
+            <div class="text-white/50 text-xs mb-1">LIVEYIELDORACLE</div>
+            <div class="font-mono text-emerald-400">0x0c94D11EF59627895FD5384A749281a90a066778</div>
+          </div>
+          <div>
+            <div class="text-white/50 text-xs mb-1">MOCKUSDC (Ritual)</div>
+            <div class="font-mono text-emerald-400">0xeC93c1C2d343aA9a26A2FaaBf7d4547beC272F69</div>
+          </div>
+          <div>
+            <div class="text-white/50 text-xs mb-1">RITUALVAULT</div>
+            <div class="font-mono text-emerald-400">0x5e3D836371645d0D284090d5C737B7A27b27E0b4</div>
+          </div>
+          <div>
+            <div class="text-white/50 text-xs mb-1">RITUAL WALLET (funded)</div>
+            <div class="font-mono text-emerald-400">0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEST IT TAB -->
+  <div id="test-content" class="hidden max-w-screen-xl mx-auto px-6 pb-20">
+    <div class="glass border border-white/10 rounded-3xl p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <div class="font-semibold text-2xl">Live Oracle Dashboard</div>
+          <div class="text-white/60">Real-time data from the deployed LiveYieldOracle</div>
         </div>
         <button onclick="refreshState()" 
-                class="text-sm px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/5 flex items-center gap-x-2">
+                class="px-5 py-2 rounded-2xl border border-white/20 hover:bg-white/5 flex items-center gap-x-2 text-sm">
           <i class="fa-solid fa-sync-alt"></i>
           <span>Refresh</span>
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Current Targets -->
-        <div>
-          <div class="text-white/50 text-sm mb-3">CURRENT ALLOCATION TARGETS</div>
-          <div id="targets-container" class="space-y-3">
-            <!-- Populated by JS -->
-          </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Allocation Targets -->
+        <div class="lg:col-span-2">
+          <div class="text-white/50 text-sm mb-4">CURRENT ALLOCATION TARGETS</div>
+          <div id="targets-container" class="space-y-4"></div>
         </div>
 
         <!-- Last Update -->
         <div>
-          <div class="text-white/50 text-sm mb-3">LAST UPDATE</div>
-          <div id="last-update" class="font-mono text-3xl font-semibold text-white/90">—</div>
-          <div id="last-block" class="text-white/50 text-sm mt-1">Block —</div>
+          <div class="text-white/50 text-sm mb-4">LAST UPDATE</div>
+          <div id="last-update" class="font-mono text-4xl font-semibold">—</div>
+          <div id="last-block" class="text-white/50 mt-1">Block —</div>
+          
+          <div class="mt-8">
+            <div class="text-white/50 text-sm mb-3">PROTOCOLS</div>
+            <div id="protocols-list" class="text-white/90 space-y-1"></div>
+          </div>
         </div>
+      </div>
 
-        <!-- Protocols -->
-        <div>
-          <div class="text-white/50 text-sm mb-3">PROTOCOLS</div>
-          <div id="protocols-list" class="text-white/90 leading-relaxed">
-            <!-- Populated by JS -->
+      <!-- Scheduler -->
+      <div class="mt-10 pt-8 border-t border-white/10">
+        <div class="font-semibold mb-4">Scheduler Status</div>
+        <div class="grid grid-cols-2 gap-6 text-sm">
+          <div class="flex justify-between py-3 border-b border-white/10">
+            <span class="text-white/60">Job ID</span>
+            <span id="job-id" class="font-mono text-emerald-400">—</span>
+          </div>
+          <div class="flex justify-between py-3 border-b border-white/10">
+            <span class="text-white/60">Frequency</span>
+            <span id="frequency" class="font-mono">— blocks</span>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Scheduler Info -->
-    <div class="glass border border-white/10 rounded-3xl p-8 mb-8">
-      <div class="font-semibold text-xl mb-4 flex items-center gap-x-3">
-        <i class="fa-solid fa-robot text-indigo-400"></i>
-        <span>Scheduler</span>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 text-sm">
-        <div class="flex justify-between py-3 border-b border-white/10">
-          <span class="text-white/60">Job ID</span>
-          <span id="job-id" class="font-mono text-emerald-400">—</span>
-        </div>
-        <div class="flex justify-between py-3 border-b border-white/10">
-          <span class="text-white/60">Frequency</span>
-          <span id="frequency" class="font-mono">— blocks</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="flex flex-wrap gap-4">
-      <a href="https://explorer.ritualfoundation.org/address/0x0c94D11EF59627895FD5384A749281a90a066778" 
-         target="_blank"
-         class="px-6 py-3 rounded-3xl border border-white/20 hover:bg-white/5 transition-all flex items-center gap-x-3 text-sm">
-        <i class="fa-solid fa-external-link-alt"></i>
-        <span>View Oracle on Explorer</span>
-      </a>
-      
-      <button onclick="copyAddress('0x0c94D11EF59627895FD5384A749281a90a066778')"
-              class="px-6 py-3 rounded-3xl border border-white/20 hover:bg-white/5 transition-all flex items-center gap-x-3 text-sm">
-        <i class="fa-solid fa-copy"></i>
-        <span>Copy Oracle Address</span>
-      </button>
-    </div>
   </div>
 
   <script>
-    const { createPublicClient, http, formatUnits } = window.viem;
+    const { createPublicClient, http } = window.viem;
 
     const RITUAL_RPC = 'https://rpc.ritualfoundation.org';
     const ORACLE_ADDRESS = '0x0c94D11EF59627895FD5384A749281a90a066778';
 
-    const client = createPublicClient({
-      transport: http(RITUAL_RPC)
-    });
+    const client = createPublicClient({ transport: http(RITUAL_RPC) });
 
-    let connectedAccount = null;
-
-    // Contract ABI (minimal)
     const oracleAbi = [
       { name: 'getCurrentTargets', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256[]' }] },
       { name: 'getLastUpdate', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }, { type: 'uint256' }] },
@@ -154,145 +233,89 @@
       { name: 'getSchedulerInfo', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'bytes32' }, { type: 'uint256' }] }
     ];
 
+    let connectedAccount = null;
+
+    function switchTab(tab) {
+      const overview = document.getElementById('overview-content');
+      const test = document.getElementById('test-content');
+      const overviewTab = document.getElementById('overview-tab');
+      const testTab = document.getElementById('test-tab');
+
+      if (tab === 0) {
+        overview.classList.remove('hidden');
+        test.classList.add('hidden');
+        overviewTab.classList.add('tab-active');
+        testTab.classList.remove('tab-active');
+      } else {
+        overview.classList.add('hidden');
+        test.classList.remove('hidden');
+        overviewTab.classList.remove('tab-active');
+        testTab.classList.add('tab-active');
+        
+        // Auto refresh when switching to test tab
+        refreshState();
+      }
+    }
+
     async function connectWallet() {
       if (!window.ethereum) {
-        alert('Please install MetaMask or another wallet');
+        alert('Please install MetaMask');
         return;
       }
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      connectedAccount = accounts[0];
+      document.getElementById('connect-text').innerHTML = connectedAccount.slice(0,6) + '...' + connectedAccount.slice(-4);
       
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        connectedAccount = accounts[0];
-        
-        document.getElementById('connect-text').innerHTML = 
-          connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
-        
-        // Switch to Ritual if needed
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x7bb' }], // 1979 in hex
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: '0x7bb',
-                chainName: 'Ritual Testnet',
-                nativeCurrency: { name: 'Ritual', symbol: 'RITUAL', decimals: 18 },
-                rpcUrls: [RITUAL_RPC],
-              }],
-            });
-          }
-        }
-        
-        await refreshState();
-      } catch (err) {
-        console.error(err);
-      }
+        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x7bb' }] });
+      } catch (e) {}
     }
 
     async function refreshState() {
       try {
-        // Current Targets
-        const targets = await client.readContract({
-          address: ORACLE_ADDRESS,
-          abi: oracleAbi,
-          functionName: 'getCurrentTargets'
-        });
-
+        const targets = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getCurrentTargets' });
         const container = document.getElementById('targets-container');
         container.innerHTML = '';
-        
         const total = targets.reduce((a, b) => a + Number(b), 0);
-        
+
         targets.forEach((weight, i) => {
           const pct = ((Number(weight) / total) * 100).toFixed(1);
           const div = document.createElement('div');
-          div.className = 'flex items-center justify-between text-sm';
           div.innerHTML = `
-            <div class="flex items-center gap-x-3 w-2/3">
-              <div class="font-mono text-emerald-400 w-12">P${i+1}</div>
-              <div class="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
-                <div class="allocation-bar" style="width: ${pct}%"></div>
-              </div>
+            <div class="flex items-center justify-between text-sm mb-1">
+              <span>Protocol ${i+1}</span>
+              <span class="font-mono">${(Number(weight)/100).toFixed(2)}%</span>
             </div>
-            <div class="font-mono text-right w-20">${(Number(weight)/100).toFixed(2)}%</div>
+            <div class="bg-white/10 rounded-full h-2 overflow-hidden">
+              <div class="allocation-bar" style="width: ${pct}%"></div>
+            </div>
           `;
           container.appendChild(div);
         });
 
-        // Last Update
-        const [block, timestamp] = await client.readContract({
-          address: ORACLE_ADDRESS,
-          abi: oracleAbi,
-          functionName: 'getLastUpdate'
-        });
-        
+        const [block, timestamp] = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getLastUpdate' });
         const date = new Date(Number(timestamp) * 1000);
         document.getElementById('last-update').innerText = date.toLocaleTimeString();
         document.getElementById('last-block').innerText = `Block ${Number(block)}`;
 
-        // Protocols
-        const protocols = await client.readContract({
-          address: ORACLE_ADDRESS,
-          abi: oracleAbi,
-          functionName: 'getProtocols'
-        });
-        document.getElementById('protocols-list').innerHTML = protocols.map(p => 
-          `<div class="py-0.5">${p}</div>`
-        ).join('');
+        const protocols = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getProtocols' });
+        document.getElementById('protocols-list').innerHTML = protocols.map(p => `<div>${p}</div>`).join('');
 
-        // Scheduler Info
-        const [jobId, freq] = await client.readContract({
-          address: ORACLE_ADDRESS,
-          abi: oracleAbi,
-          functionName: 'getSchedulerInfo'
-        });
-        
-        document.getElementById('job-id').innerText = jobId === '0x0000000000000000000000000000000000000000000000000000000000000000' 
-          ? 'Not scheduled' 
-          : jobId.slice(0, 10) + '...';
+        const [jobId, freq] = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getSchedulerInfo' });
+        document.getElementById('job-id').innerText = jobId === '0x0000000000000000000000000000000000000000000000000000000000000000' ? 'Not scheduled' : jobId.slice(0,10)+'...';
         document.getElementById('frequency').innerText = `${Number(freq)} blocks`;
 
       } catch (err) {
-        console.error('Failed to fetch oracle state:', err);
-        document.getElementById('targets-container').innerHTML = 
-          `<div class="text-red-400 text-sm">Failed to load oracle data. Check RPC connection.</div>`;
+        console.error(err);
+        document.getElementById('targets-container').innerHTML = `<div class="text-red-400">Failed to load data</div>`;
       }
-    }
-
-    function copyAddress(address) {
-      navigator.clipboard.writeText(address);
-      const btns = document.querySelectorAll('button');
-      const originalText = event.currentTarget?.innerText;
-      // simple feedback
-      const toast = document.createElement('div');
-      toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-black px-5 py-2 rounded-2xl text-sm shadow-xl';
-      toast.innerText = 'Address copied!';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 1800);
-    }
-
-    // Auto-refresh every 30 seconds
-    function startAutoRefresh() {
-      setInterval(() => {
-        if (document.visibilityState === 'visible') {
-          refreshState();
-        }
-      }, 30000);
     }
 
     // Boot
     window.onload = () => {
-      refreshState();
-      startAutoRefresh();
-      
-      // Auto-connect if already connected
-      if (window.ethereum && window.ethereum.selectedAddress) {
-        connectWallet();
-      }
+      // Default to Overview tab
+      document.getElementById('overview-content').classList.remove('hidden');
+      document.getElementById('test-content').classList.add('hidden');
     };
   </script>
 </body>
