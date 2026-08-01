@@ -231,6 +231,21 @@
 
   <script>
     let connectedAccount = null;
+    const discoveredProviders = [];
+
+    // EIP-6963: Discover EVM wallets
+    function setupWalletDiscovery() {
+      window.addEventListener("eip6963:announceProvider", (event) => {
+        const { info, provider } = event.detail;
+        // Only accept EVM wallets
+        if (info && provider && info.rdns && !info.rdns.includes("starknet")) {
+          discoveredProviders.push({ info, provider });
+        }
+      });
+
+      // Request providers to announce themselves
+      window.dispatchEvent(new Event("eip6963:requestProvider"));
+    }
 
     function switchTab(tab) {
       const overview = document.getElementById('overview-content');
@@ -253,28 +268,32 @@
 
     async function connectWallet() {
       try {
-        if (!window.ethereum) {
-          alert('No EVM wallet found. Please install MetaMask.');
-          return;
-        }
-
-        // STRICT: Only accept real MetaMask
         let provider = null;
 
-        if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
-          provider = window.ethereum.providers.find(p => p.isMetaMask === true);
+        // Try EIP-6963 first (modern way - shows real wallet popup)
+        if (discoveredProviders.length > 0) {
+          // Prefer MetaMask or Rabby
+          const preferred = discoveredProviders.find(p => 
+            p.info.rdns.includes("metamask") || 
+            p.info.rdns.includes("rabby")
+          );
+          provider = preferred ? preferred.provider : discoveredProviders[0].provider;
         } 
-        
-        if (!provider && window.ethereum.isMetaMask === true) {
-          provider = window.ethereum;
+        // Fallback to classic window.ethereum
+        else if (window.ethereum) {
+          if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+            provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
+          } else if (window.ethereum.isMetaMask) {
+            provider = window.ethereum;
+          }
         }
 
         if (!provider) {
-          alert('No real MetaMask detected. Please disable other wallet extensions (Argent X, etc.) and try again.');
+          alert('No EVM wallet found. Please install MetaMask or Rabby.');
           return;
         }
 
-        // Request accounts from the real MetaMask
+        // This should trigger the real wallet popup
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
 
@@ -310,7 +329,7 @@
           }
         }
 
-        console.log('%c[Wallet] Successfully connected via real MetaMask', 'color:#22c55e');
+        console.log('%c[Wallet] Connected via real EVM wallet popup', 'color:#22c55e');
         alert('Connected successfully!');
 
       } catch (err) {
@@ -322,6 +341,9 @@
     window.onload = () => {
       document.getElementById('overview-content').classList.remove('hidden');
       document.getElementById('test-content').classList.add('hidden');
+      
+      // Start listening for wallet announcements
+      setupWalletDiscovery();
     };
   </script>
 </body>
