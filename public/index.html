@@ -253,64 +253,52 @@
 
     async function connectWallet() {
       try {
-        // Get MetaMask directly
-        let provider = null;
-
-        if (window.ethereum) {
-          if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
-            provider = window.ethereum.providers.find(p => p.isMetaMask === true);
-          } else if (window.ethereum.isMetaMask === true) {
-            provider = window.ethereum;
-          }
-        }
-
-        if (!provider) {
-          alert('MetaMask not found. Please install MetaMask and refresh the page.');
+        // Only use real MetaMask
+        if (!window.ethereum || !window.ethereum.isMetaMask) {
+          alert('MetaMask not detected. Please install MetaMask.');
           return;
         }
 
-        // This line opens the MetaMask popup
-        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        // This line opens the real MetaMask popup
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts' 
+        });
+        
         connectedAccount = accounts[0];
-
         document.getElementById('connect-text').innerHTML = 
           connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
 
-        // Switch to Ritual Testnet
-        const ritualChain = {
-          chainId: '0x7bb',
-          chainName: 'Ritual Testnet',
-          nativeCurrency: { name: 'Ritual', symbol: 'RITUAL', decimals: 18 },
-          rpcUrls: ['https://rpc.ritualfoundation.org'],
-          blockExplorerUrls: ['https://explorer.ritualfoundation.org']
-        };
-
+        // Switch to Ritual
         try {
-          await provider.request({
+          await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: ritualChain.chainId }]
+            params: [{ chainId: '0x7bb' }]
           });
-        } catch (switchErr) {
-          if (switchErr.code === 4902) {
-            await provider.request({
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
               method: 'wallet_addEthereumChain',
-              params: [ritualChain]
+              params: [{
+                chainId: '0x7bb',
+                chainName: 'Ritual Testnet',
+                nativeCurrency: { name: 'Ritual', symbol: 'RITUAL', decimals: 18 },
+                rpcUrls: ['https://rpc.ritualfoundation.org']
+              }]
             });
-            await provider.request({
+            await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: ritualChain.chainId }]
+              params: [{ chainId: '0x7bb' }]
             });
           } else {
-            throw switchErr;
+            throw switchError;
           }
         }
 
-        console.log('%c[Wallet] MetaMask popup triggered successfully', 'color:#22c55e');
         alert('Connected to MetaMask!');
 
       } catch (err) {
-        console.error('Wallet error:', err);
-        alert('Error: ' + (err.message || err.code || 'Unknown error'));
+        console.error(err);
+        alert('Error: ' + (err.message || 'Connection failed'));
       }
     }
 
