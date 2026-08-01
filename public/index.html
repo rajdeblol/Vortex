@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vortex • Autonomous Yield Optimizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+    
+    :root {
+      --primary: #6366f1;
+    }
+    
+    body {
+      font-family: 'Inter', system_ui, sans-serif;
+    }
+    
+    .font-display {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-weight: 600;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+    }
+
+    .ritual-glow {
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.3);
+    }
+
+    .nav-active {
+      color: white;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-white">
+  <!-- Navbar -->
+  <nav class="border-b border-white/10">
+    <div class="max-w-screen-xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-x-3">
+        <div class="w-9 h-9 bg-indigo-600 rounded-2xl flex items-center justify-center">
+          <i class="fa-solid fa-infinity text-white text-2xl"></i>
+        </div>
+        <div>
+          <span class="font-display text-3xl font-semibold tracking-tighter">Vortex</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-x-8 text-sm">
+        <a href="#how" class="hover:text-white/70 transition-colors">How it works</a>
+        <a href="#contracts" class="hover:text-white/70 transition-colors">Contracts</a>
+        <a href="#docs" class="hover:text-white/70 transition-colors">Docs</a>
+      </div>
+
+      <div class="flex items-center gap-x-3">
+        <a href="https://github.com/rajdeblol/Vortex" target="_blank"
+           class="px-5 py-2.5 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm flex items-center gap-x-2">
+          <i class="fa-brands fa-github"></i>
+          <span>GitHub</span>
+        </a>
+        <button onclick="window.open('https://github.com/rajdeblol/Vortex', '_blank')"
+                class="px-5 py-2.5 rounded-2xl bg-white text-black hover:bg-white/90 transition-all text-sm font-semibold flex items-center gap-x-2">
+          <span>View on GitHub</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="max-w-screen-xl mx-auto px-6 pt-20 pb-24 text-center">
+    <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-full border border-white/10 mb-6">
+      <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+      <span class="text-sm text-emerald-400 font-medium">Live on Ritual Testnet</span>
+    </div>
+
+    <h1 class="text-7xl font-display tracking-tighter leading-none mb-4">
+      Autonomous Yield.<br>
+      <span class="gradient-text">Fully On-Chain.</span>
+    </h1>
+    
+    <p class="max-w-md mx-auto text-xl text-white/60 mb-10">
+      Vortex is the first fully autonomous cross-chain yield optimizer 
+      running natively on Ritual Chain using Scheduler, HTTP &amp; ONNX precompiles.
+    </p>
+
+    <div class="flex items-center justify-center gap-x-4">
+      <a href="#how" 
+         class="px-8 py-4 rounded-3xl bg-white text-black font-semibold hover:bg-white/90 transition-all flex items-center gap-x-3">
+        <span>Learn how it works</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </a>
+      <a href="https://github.com/rajdeblol/Vortex" target="_blank"
+         class="px-8 py-4 rounded-3xl border border-white/20 hover:bg-white/5 transition-all flex items-center gap-x-3">
+        <i class="fa-brands fa-github text-xl"></i>
+        <span>View Source</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="max-w-screen-xl mx-auto px-6 pb-20">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="glass border border-white/10 rounded-3xl p-8">
+        <div class="text-4xl font-display tracking-tighter">100%</div>
+        <div class="text-white/60 mt-1">On-chain autonomous</div>
+      </div>
+      <div class="glass border border-white/10 rounded-3xl p-8">
+        <div class="text-4xl font-display tracking-tighter">1M</div>
+        <div class="text-white/60 mt-1">Token context window</div>
+      </div>
+      <div class="glass border border-white/10 rounded-3xl p-8">
+        <div class="text-4xl font-display tracking-tighter">1979</div>
+        <div class="text-white/60 mt-1">Ritual Chain ID</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div id="how" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
+    <div class="text-center mb-14">
+      <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">AUTONOMOUS BY DESIGN</div>
+      <h2 class="text-5xl font-display tracking-tighter mt-3">How Vortex Works</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass border border-white/10 rounded-3xl p-8">
+        <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+          <i class="fa-solid fa-clock text-3xl"></i>
+        </div>
+        <h3 class="font-semibold text-2xl mb-3">1. Scheduler Tick</h3>
+        <p class="text-white/60">The Ritual Scheduler (0x56e7...) automatically calls <code>tick()</code> at configurable intervals with no keepers required.</p>
+      </div>
+      
+      <div class="glass border border-white/10 rounded-3xl p-8">
+        <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+          <i class="fa-solid fa-globe text-3xl"></i>
+        </div>
+        <h3 class="font-semibold text-2xl mb-3">2. Live Yield Data</h3>
+        <p class="text-white/60">HTTP precompile (0x0801) fetches real-time APY + volatility from public yield APIs (DefiLlama style).</p>
+      </div>
+      
+      <div class="glass border border-white/10 rounded-3xl p-8">
+        <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+          <i class="fa-solid fa-brain text-3xl"></i>
+        </div>
+        <h3 class="font-semibold text-2xl mb-3">3. ONNX Inference</h3>
+        <p class="text-white/60">ONNX precompile (0x0800) runs a regression model that outputs optimal allocation weights in basis points.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contracts -->
+  <div id="contracts" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
+    <div class="flex items-end justify-between mb-8">
+      <div>
+        <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">DEPLOYED ON RITUAL</div>
+        <h2 class="text-5xl font-display tracking-tighter">Live Contracts</h2>
+      </div>
+      <a href="https://github.com/rajdeblol/Vortex" target="_blank" class="text-sm flex items-center gap-x-2 hover:text-white/70">
+        View on GitHub <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+      </a>
+    </div>
+
+    <div class="bg-zinc-900 border border-white/10 rounded-3xl p-8 font-mono text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6">
+        <div>
+          <div class="text-white/50 text-xs mb-1">LIVEYIELDORACLE</div>
+          <div class="font-mono text-emerald-400">0x0c94D11EF59627895FD5384A749281a90a066778</div>
+        </div>
+        <div>
+          <div class="text-white/50 text-xs mb-1">MOCKUSDC (Ritual)</div>
+          <div class="font-mono text-emerald-400">0xeC93c1C2d343aA9a26A2FaaBf7d4547beC272F69</div>
+        </div>
+        <div>
+          <div class="text-white/50 text-xs mb-1">RITUALVAULT</div>
+          <div class="font-mono text-emerald-400">0x5e3D836371645d0D284090d5C737B7A27b27E0b4</div>
+        </div>
+        <div>
+          <div class="text-white/50 text-xs mb-1">RITUAL WALLET (funded)</div>
+          <div class="font-mono text-emerald-400">0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="border-t border-white/10 py-8 text-center text-sm text-white/50">
+    Built for Ritual Chain • Fully autonomous • No keepers
+  </div>
+
+  <script>
+    // Simple tailwind script
+    console.log('%c[Vortex] Landing page loaded', 'color:#64748b');
+  </script>
+</body>
+</html>
