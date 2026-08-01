@@ -10,19 +10,11 @@
     body { font-family: 'Inter', system_ui, sans-serif; }
     .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); }
-    .allocation-bar { height: 8px; background: linear-gradient(to right, #6366f1, #a855f7); border-radius: 9999px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-    .tab-active { border-bottom: 3px solid #6366f1; color: white; font-weight: 600; }
-    .wallet-option {
-      transition: all 0.2s ease;
-    }
-    .wallet-option:hover {
-      background-color: rgba(255,255,255,0.08);
-      transform: translateY(-1px);
-    }
+    .wallet-option { transition: all 0.2s ease; }
+    .wallet-option:hover { background-color: rgba(255,255,255,0.08); }
   </style>
 </head>
 <body class="bg-zinc-950 text-white">
-  <!-- Navbar -->
   <nav class="border-b border-white/10 sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-lg">
     <div class="max-w-screen-xl mx-auto px-6 py-5 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
@@ -47,7 +39,6 @@
     </div>
   </nav>
 
-  <!-- Hero -->
   <div class="max-w-screen-xl mx-auto px-6 pt-20 pb-16 text-center">
     <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-full border border-white/10 mb-6">
       <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -75,7 +66,6 @@
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="max-w-screen-xl mx-auto px-6">
     <div class="flex border-b border-white/10 mb-10">
       <button onclick="switchTab(0)" id="overview-tab"
@@ -85,9 +75,7 @@
     </div>
   </div>
 
-  <!-- OVERVIEW TAB -->
   <div id="overview-content">
-    <!-- Stats -->
     <div class="max-w-screen-xl mx-auto px-6 pb-20">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="glass border border-white/10 rounded-3xl p-8">
@@ -105,7 +93,6 @@
       </div>
     </div>
 
-    <!-- How it works -->
     <div id="how" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
       <div class="text-center mb-14">
         <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">FROM DEPOSIT TO OPTIMIZED YIELD</div>
@@ -147,7 +134,6 @@
       </div>
     </div>
 
-    <!-- Contracts -->
     <div id="contracts" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
       <div class="flex items-end justify-between mb-8">
         <div>
@@ -179,7 +165,6 @@
     </div>
   </div>
 
-  <!-- TEST IT TAB -->
   <div id="test-content" class="hidden max-w-screen-xl mx-auto px-6 pb-20">
     <div class="glass border border-white/10 rounded-3xl p-8">
       <div class="flex items-center justify-between mb-8">
@@ -227,7 +212,6 @@
       </div>
     </div>
 
-    <!-- Deposit Options -->
     <div class="mt-8 glass border border-white/10 rounded-3xl p-8">
       <div class="font-semibold text-xl mb-4">Deposit Options</div>
       <div class="grid md:grid-cols-2 gap-4">
@@ -254,11 +238,11 @@
       </div>
       
       <div id="wallet-list" class="space-y-3">
-        <!-- Wallets will be populated here by JavaScript -->
+        <!-- Populated by JS -->
       </div>
       
       <div class="mt-6 text-center">
-        <p class="text-white/60 text-sm">Only EVM wallets are supported (MetaMask, Rabby, etc.)</p>
+        <p class="text-white/60 text-sm">Only EVM wallets are shown (MetaMask, Rabby, etc.)</p>
       </div>
     </div>
   </div>
@@ -267,24 +251,20 @@
     let connectedAccount = null;
     const discoveredWallets = [];
 
-    // EIP-6963 Wallet Discovery
+    // EIP-6963 Discovery (only real wallets)
     function setupWalletDiscovery() {
       window.addEventListener("eip6963:announceProvider", (event) => {
         const { info, provider } = event.detail;
-        
-        // Only accept EVM wallets (skip Starknet/Phantom etc.)
-        if (info && provider && info.rdns) {
+        if (info && provider) {
+          // Only EVM wallets
           const isEVM = !info.rdns.includes("starknet") && 
                        !info.rdns.includes("phantom") && 
                        !info.rdns.includes("solana");
-          
           if (isEVM) {
             discoveredWallets.push({ info, provider });
           }
         }
       });
-
-      // Request wallets to announce themselves
       window.dispatchEvent(new Event("eip6963:requestProvider"));
     }
 
@@ -293,8 +273,15 @@
       const list = document.getElementById('wallet-list');
       list.innerHTML = '';
 
-      // Add discovered EIP-6963 wallets
-      if (discoveredWallets.length > 0) {
+      if (discoveredWallets.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fa-solid fa-wallet text-4xl text-white/30 mb-4"></i>
+            <p class="text-white/70">No EVM wallets detected.</p>
+            <p class="text-white/50 text-sm mt-2">Please install MetaMask or Rabby.</p>
+          </div>
+        `;
+      } else {
         discoveredWallets.forEach((wallet, index) => {
           const div = document.createElement('div');
           div.className = 'wallet-option flex items-center gap-4 p-4 border border-white/10 rounded-2xl cursor-pointer';
@@ -311,32 +298,6 @@
           div.onclick = () => connectWithProvider(wallet.provider, wallet.info.name);
           list.appendChild(div);
         });
-      } 
-      // Fallback to classic window.ethereum (MetaMask)
-      else if (window.ethereum && window.ethereum.isMetaMask) {
-        const div = document.createElement('div');
-        div.className = 'wallet-option flex items-center gap-4 p-4 border border-white/10 rounded-2xl cursor-pointer';
-        div.innerHTML = `
-          <div class="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
-            <i class="fa-brands fa-ethereum text-xl text-orange-400"></i>
-          </div>
-          <div class="flex-1">
-            <div class="font-semibold">MetaMask</div>
-            <div class="text-white/50 text-sm">Browser Extension</div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-white/40"></i>
-        `;
-        div.onclick = () => connectWithProvider(window.ethereum, 'MetaMask');
-        list.appendChild(div);
-      } 
-      else {
-        list.innerHTML = `
-          <div class="text-center py-8">
-            <i class="fa-solid fa-wallet text-4xl text-white/30 mb-4"></i>
-            <p class="text-white/70">No EVM wallets detected.</p>
-            <p class="text-white/50 text-sm mt-2">Please install MetaMask or Rabby.</p>
-          </div>
-        `;
       }
 
       modal.classList.remove('hidden');
@@ -350,7 +311,7 @@
       try {
         closeWalletModal();
 
-        // This will open the real wallet popup
+        // This will open the REAL wallet popup
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
 
@@ -416,17 +377,13 @@
     window.onload = () => {
       document.getElementById('overview-content').classList.remove('hidden');
       document.getElementById('test-content').classList.add('hidden');
-      
-      // Start EIP-6963 discovery
       setupWalletDiscovery();
     };
 
-    // EIP-6963 Discovery
     function setupWalletDiscovery() {
       window.addEventListener("eip6963:announceProvider", (event) => {
         const { info, provider } = event.detail;
         if (info && provider) {
-          // Only keep EVM wallets
           const isEVM = !info.rdns.includes("starknet") && 
                        !info.rdns.includes("phantom") && 
                        !info.rdns.includes("solana");
