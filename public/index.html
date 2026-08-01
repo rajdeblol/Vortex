@@ -252,21 +252,26 @@
     }
 
     async function connectWallet() {
-      if (!window.ethereum) {
-        alert("MetaMask install karo pehle!");
+      // Strict check - only real MetaMask
+      if (!window.ethereum || window.ethereum.isMetaMask !== true) {
+        alert("Real MetaMask nahi mila. Dusre wallet extensions disable karo.");
         return;
       }
+
       try {
+        // Yeh line real MetaMask popup kholti hai
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
+        
         connectedAccount = accounts[0];
         document.getElementById('connect-text').innerHTML = 
           connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
-        
-        alert("Connected to MetaMask!");
+
+        alert("MetaMask se connect ho gaya!");
+
       } catch (err) {
-        console.error("User ne connection reject kiya:", err);
+        console.error("User ne reject kiya ya error aaya:", err);
       }
     }
 
