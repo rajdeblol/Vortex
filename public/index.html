@@ -223,43 +223,84 @@
       </div>
     </div>
 
-    <!-- Base Sepolia Deposit Section for Testing -->
+    <!-- SIMPLE BASE SEPOLIA TESTING -->
     <div class="mt-8 glass border border-white/10 rounded-3xl p-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <div class="font-semibold text-2xl">Deposit on Base Sepolia (Testing)</div>
-          <div class="text-white/60 text-sm">Send USDC to test the Base vault flow</div>
+          <div class="font-semibold text-2xl flex items-center gap-2">
+            <i class="fa-brands fa-ethereum text-orange-400"></i>
+            <span>Base Sepolia Test</span>
+          </div>
+          <div class="text-white/60 text-sm mt-1">Get test USDC → Deposit to vault</div>
         </div>
       </div>
 
       <div class="space-y-4">
-        <div>
-          <label class="text-white/70 text-sm block mb-1">BaseVault Address</label>
+        <!-- Step 1: Get USDC -->
+        <div class="glass border border-white/5 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-semibold">Step 1: Get Test USDC</div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <a href="https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet" 
+               target="_blank"
+               class="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm text-center flex items-center justify-center gap-2">
+              <i class="fa-solid fa-droplet text-blue-400"></i>
+              <span>Get Base Sepolia ETH</span>
+            </a>
+            <a href="https://faucet.circle.com/" 
+               target="_blank"
+               class="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm text-center flex items-center justify-center gap-2">
+              <i class="fa-solid fa-coins text-green-400"></i>
+              <span>Get USDC (Circle Faucet)</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Step 2: Deposit -->
+        <div class="glass border border-white/5 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-semibold">Step 2: Deposit to Vault</div>
+          </div>
+          
           <input type="text" id="base-vault-address" 
-                 class="w-full bg-zinc-900 border border-white/20 rounded-2xl px-4 py-3 text-sm font-mono"
-                 placeholder="0x... (paste your deployed BaseVault address)">
-        </div>
+                 class="w-full bg-zinc-900 border border-white/20 rounded-2xl px-4 py-3 text-sm font-mono mb-3"
+                 placeholder="BaseVault address (0x...)"
+                 value="0x5e3D836371645d0D284090d5C737B7A27b27E0b4">
 
-        <div>
-          <label class="text-white/70 text-sm block mb-1">Amount (USDC)</label>
-          <input type="number" id="base-deposit-amount" 
-                 class="w-full bg-zinc-900 border border-white/20 rounded-2xl px-4 py-3 text-sm"
-                 placeholder="100">
-        </div>
+          <div class="flex gap-3">
+            <input type="number" id="base-deposit-amount" 
+                   class="flex-1 bg-zinc-900 border border-white/20 rounded-2xl px-4 py-3 text-sm"
+                   placeholder="Amount (e.g. 10)">
+            
+            <button onclick="switchToBaseSepolia()" 
+                    class="px-6 py-3 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm whitespace-nowrap">
+              <i class="fa-solid fa-arrow-right-arrow-left mr-2"></i>
+              Switch to Base Sepolia
+            </button>
+          </div>
 
-        <div class="flex gap-3">
-          <button onclick="switchToBaseSepolia()" 
-                  class="flex-1 px-6 py-3 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm">
-            Switch to Base Sepolia
-          </button>
           <button onclick="depositOnBase()" 
-                  class="flex-1 px-6 py-3 rounded-2xl bg-white text-black font-semibold hover:bg-white/90 transition-all text-sm">
-            Deposit
+                  class="w-full mt-3 px-6 py-3 rounded-2xl bg-white text-black font-semibold hover:bg-white/90 transition-all text-sm">
+            <i class="fa-solid fa-arrow-down mr-2"></i>
+            Deposit USDC
           </button>
         </div>
 
-        <div class="text-xs text-white/50">
-          Note: This is only for testing. Make sure you have Base Sepolia USDC.
+        <!-- Quick Deploy -->
+        <div class="glass border border-white/5 rounded-2xl p-5 bg-indigo-600/20">
+          <div class="font-semibold mb-2">Need a Vault?</div>
+          <div class="text-white/70 text-sm mb-3">Don't have a BaseVault? Deploy one:</div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <button onclick="navigator.clipboard.writeText('cd /Users/raj/LiveYieldOracle && export PRIVATE_KEY=YOUR_KEY && forge script script/DeployBase.s.sol:DeployBase --rpc-url base_sepolia --broadcast')"
+                    class="px-4 py-2 rounded-xl bg-zinc-800 border border-white/10 text-sm font-mono text-xs hover:bg-zinc-700">
+              Copy Deploy Command
+            </button>
+            <a href="https://sepolia.basescan.org/address/0x5e3D836371645d0D284090d5C737B7A27b27E0b4" target="_blank"
+               class="px-4 py-2 rounded-xl border border-white/10 text-sm text-center hover:bg-white/5">
+              View Test Vault
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -394,7 +435,6 @@
       }
     }
 
-    // ==================== BASE SEPOLIA TESTING ====================
     async function switchToBaseSepolia() {
       if (!window.ethereum) {
         alert("MetaMask not found");
@@ -428,7 +468,7 @@
       const amount = document.getElementById('base-deposit-amount').value;
 
       if (!vaultAddress || !amount) {
-        alert("Please enter BaseVault address and amount");
+        alert("Enter vault address and amount");
         return;
       }
 
@@ -455,27 +495,27 @@
           method: 'eth_sendTransaction',
           params: [{
             from: userAddress,
-            to: usdcAddress,
+            to: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
             data: approveData,
           }],
         });
 
-        alert("Approval transaction sent. Please wait for confirmation then click Deposit again.");
+        alert("Approval sent! Click Deposit again after it confirms.");
 
         // Deposit
         const depositData = "0xb6b55f25" + 
-          amountInUnits.toString(16).padStart(64, "0");
+          BigInt(Math.floor(parseFloat(amount) * 10 ** 6)).toString(16).padStart(64, "0");
 
         await provider.request({
           method: 'eth_sendTransaction',
           params: [{
-            from: userAddress,
+            from: accounts[0],
             to: vaultAddress,
             data: depositData,
           }],
         });
 
-        alert("Deposit transaction sent!");
+        alert("Deposit sent!");
 
       } catch (err) {
         console.error(err);
