@@ -10,6 +10,8 @@
     body { font-family: 'Inter', system_ui, sans-serif; }
     .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); }
+    .allocation-bar { height: 8px; background: linear-gradient(to right, #6366f1, #a855f7); border-radius: 9999px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tab-active { border-bottom: 3px solid #6366f1; color: white; font-weight: 600; }
     .wallet-option { transition: all 0.2s ease; }
     .wallet-option:hover { background-color: rgba(255,255,255,0.08); }
   </style>
@@ -30,12 +32,22 @@
         <a href="https://github.com/rajdeblol/Vortex" target="_blank" class="hover:text-white/70 transition-colors">GitHub</a>
       </div>
 
-      <button onclick="openWalletModal()" 
-              id="connect-btn"
-              class="px-5 py-2.5 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm flex items-center gap-x-2">
-        <i class="fa-solid fa-wallet"></i>
-        <span id="connect-text">Connect Wallet</span>
-      </button>
+      <div class="flex items-center gap-x-2" id="wallet-section">
+        <button onclick="openWalletModal()" 
+                id="connect-btn"
+                class="px-5 py-2.5 rounded-2xl border border-white/20 hover:bg-white/5 transition-all text-sm flex items-center gap-x-2">
+          <i class="fa-solid fa-wallet"></i>
+          <span id="connect-text">Connect Wallet</span>
+        </button>
+        
+        <!-- Disconnect Button (hidden by default) -->
+        <button onclick="disconnectWallet()" 
+                id="disconnect-btn"
+                class="hidden px-3 py-2.5 rounded-2xl border border-red-500/30 hover:bg-red-500/10 text-red-400 transition-all text-sm flex items-center gap-x-2">
+          <i class="fa-solid fa-sign-out-alt"></i>
+          <span>Disconnect</span>
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -252,7 +264,6 @@
         const { info, provider } = event.detail;
         if (info && provider) {
           const rdns = info.rdns.toLowerCase();
-          // Only allow real EVM wallets
           const isEVM = rdns.includes("metamask") || 
                        rdns.includes("rabby") || 
                        rdns.includes("coinbase") ||
@@ -309,19 +320,35 @@
       try {
         closeWalletModal();
 
-        // This opens the REAL wallet popup
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
 
-        document.getElementById('connect-text').innerHTML = 
-          connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
-
-        alert(`Connected to ${walletName}!`);
+        updateWalletUI();
 
       } catch (err) {
         console.error(err);
         alert('Connection failed: ' + (err.message || err.code));
       }
+    }
+
+    function updateWalletUI() {
+      const connectBtn = document.getElementById('connect-btn');
+      const disconnectBtn = document.getElementById('disconnect-btn');
+      const connectText = document.getElementById('connect-text');
+
+      if (connectedAccount) {
+        connectText.innerHTML = connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
+        disconnectBtn.classList.remove('hidden');
+      } else {
+        connectText.innerHTML = 'Connect Wallet';
+        disconnectBtn.classList.add('hidden');
+      }
+    }
+
+    function disconnectWallet() {
+      connectedAccount = null;
+      updateWalletUI();
+      alert("Wallet disconnected!");
     }
 
     function switchTab(tab) {
