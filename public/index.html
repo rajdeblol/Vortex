@@ -6,9 +6,7 @@
   <title>Vortex • Autonomous Yield Optimizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://unpkg.com/viem@2.21.0/dist/index.global.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
     body { font-family: 'Inter', system_ui, sans-serif; }
     .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); }
@@ -232,21 +230,38 @@
   </div>
 
   <script>
-    const { createPublicClient, http } = window.viem;
-
+    // === CONFIG ===
     const RITUAL_RPC = 'https://rpc.ritualfoundation.org';
     const ORACLE_ADDRESS = '0x0c94D11EF59627895FD5384A749281a90a066778';
 
-    const client = createPublicClient({ transport: http(RITUAL_RPC) });
-
-    const oracleAbi = [
-      { name: 'getCurrentTargets', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256[]' }] },
-      { name: 'getLastUpdate', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }, { type: 'uint256' }] },
-      { name: 'getProtocols', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'string[]' }] },
-      { name: 'getSchedulerInfo', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'bytes32' }, { type: 'uint256' }] }
-    ];
-
     let connectedAccount = null;
+    let viemClient = null;
+
+    // Load viem from CDN with fallback
+    async function loadViem() {
+      if (window.viem) {
+        const { createPublicClient, http } = window.viem;
+        viemClient = createPublicClient({ transport: http(RITUAL_RPC) });
+        return true;
+      }
+      
+      // Try loading viem dynamically
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/viem@2.21.0/dist/index.global.js';
+        script.onload = () => {
+          if (window.viem) {
+            const { createPublicClient, http } = window.viem;
+            viemClient = createPublicClient({ transport: http(RITUAL_RPC) });
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        };
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+      });
+    }
 
     function switchTab(tab) {
       const overview = document.getElementById('overview-content');
@@ -270,30 +285,24 @@
 
     async function connectWallet() {
       try {
-        // Get the best available EVM provider
-        let provider = null;
-
-        if (window.ethereum) {
-          if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
-            provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
-          } else {
-            provider = window.ethereum;
-          }
-        }
+        // Get EVM provider
+        let provider = window.ethereum;
 
         if (!provider) {
           alert('No EVM wallet found. Please install MetaMask.');
           return;
         }
 
-        // Request connection
+        if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+          provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
+        }
+
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
         
         document.getElementById('connect-text').innerHTML = 
           connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
 
-        // Add/Switch to Ritual
         const ritualChain = {
           chainId: '0x7bb',
           chainName: 'Ritual Testnet',
@@ -322,18 +331,37 @@
           }
         }
 
-        console.log('%c[Wallet] Successfully connected to Ritual', 'color:#22c55e');
+        console.log('%c[Wallet] Connected to Ritual testnet', 'color:#22c55e');
         await refreshState();
 
       } catch (err) {
-        console.error('Full wallet error:', err);
-        alert('Error: ' + (err.message || err.code || 'Unknown error'));
+        console.error('Wallet connection error:', err);
+        alert('Error: ' + (err.message || err.code || 'Unknown error. Check console.'));
       }
     }
 
     async function refreshState() {
+      if (!viemClient) {
+        const loaded = await loadViem();
+        if (!loaded) {
+          document.getElementById('targets-container').innerHTML = 
+            `<div class="text-red-400 text-sm">Failed to load blockchain data (viem not available)</div>`;
+          return;
+        }
+      }
+
       try {
-        const targets = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getCurrentTargets' });
+        const targets = await viemClient.readContract({
+          address: ORACLE_ADDRESS,
+          abi: [
+            { name: 'getCurrentTargets', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256[]' }] },
+            { name: 'getLastUpdate', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }, { type: 'uint256' }] },
+            { name: 'getProtocols', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'string[]' }] },
+            { name: 'getSchedulerInfo', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'bytes32' }, { type: 'uint256' }] }
+          ],
+          functionName: 'getCurrentTargets'
+        });
+
         const container = document.getElementById('targets-container');
         container.innerHTML = '';
         const total = targets.reduce((a, b) => a + Number(b), 0);
@@ -353,15 +381,35 @@
           container.appendChild(div);
         });
 
-        const [block, timestamp] = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getLastUpdate' });
+        const [block, timestamp] = await viemClient.readContract({
+          address: ORACLE_ADDRESS,
+          abi: [
+            { name: 'getLastUpdate', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }, { type: 'uint256' }] }
+          ],
+          functionName: 'getLastUpdate'
+        });
+        
         const date = new Date(Number(timestamp) * 1000);
         document.getElementById('last-update').innerText = date.toLocaleTimeString();
         document.getElementById('last-block').innerText = `Block ${Number(block)}`;
 
-        const protocols = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getProtocols' });
+        const protocols = await viemClient.readContract({
+          address: ORACLE_ADDRESS,
+          abi: [
+            { name: 'getProtocols', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'string[]' }] }
+          ],
+          functionName: 'getProtocols'
+        });
         document.getElementById('protocols-list').innerHTML = protocols.map(p => `<div>${p}</div>`).join('');
 
-        const [jobId, freq] = await client.readContract({ address: ORACLE_ADDRESS, abi: oracleAbi, functionName: 'getSchedulerInfo' });
+        const [jobId, freq] = await viemClient.readContract({
+          address: ORACLE_ADDRESS,
+          abi: [
+            { name: 'getSchedulerInfo', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'bytes32' }, { type: 'uint256' }] }
+          ],
+          functionName: 'getSchedulerInfo'
+        });
+        
         document.getElementById('job-id').innerText = jobId === '0x0000000000000000000000000000000000000000000000000000000000000000' ? 'Not scheduled' : jobId.slice(0,10)+'...';
         document.getElementById('frequency').innerText = `${Number(freq)} blocks`;
 
@@ -371,9 +419,12 @@
       }
     }
 
-    window.onload = () => {
+    window.onload = async () => {
       document.getElementById('overview-content').classList.remove('hidden');
       document.getElementById('test-content').classList.add('hidden');
+      
+      // Preload viem
+      await loadViem();
     };
   </script>
 </body>
