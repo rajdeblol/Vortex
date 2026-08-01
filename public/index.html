@@ -17,7 +17,6 @@
   </style>
 </head>
 <body class="bg-zinc-950 text-white">
-  <!-- Navbar -->
   <nav class="border-b border-white/10 sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-lg">
     <div class="max-w-screen-xl mx-auto px-6 py-5 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
@@ -42,7 +41,6 @@
     </div>
   </nav>
 
-  <!-- Hero -->
   <div class="max-w-screen-xl mx-auto px-6 pt-20 pb-16 text-center">
     <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-full border border-white/10 mb-6">
       <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -70,7 +68,6 @@
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="max-w-screen-xl mx-auto px-6">
     <div class="flex border-b border-white/10 mb-10">
       <button onclick="switchTab(0)" id="overview-tab"
@@ -80,9 +77,7 @@
     </div>
   </div>
 
-  <!-- OVERVIEW TAB -->
   <div id="overview-content">
-    <!-- Stats -->
     <div class="max-w-screen-xl mx-auto px-6 pb-20">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="glass border border-white/10 rounded-3xl p-8">
@@ -100,7 +95,6 @@
       </div>
     </div>
 
-    <!-- How it works -->
     <div id="how" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
       <div class="text-center mb-14">
         <div class="text-indigo-400 text-sm font-semibold tracking-[3px]">FROM DEPOSIT TO OPTIMIZED YIELD</div>
@@ -142,7 +136,6 @@
       </div>
     </div>
 
-    <!-- Contracts -->
     <div id="contracts" class="max-w-screen-xl mx-auto px-6 py-20 border-t border-white/10">
       <div class="flex items-end justify-between mb-8">
         <div>
@@ -174,7 +167,6 @@
     </div>
   </div>
 
-  <!-- TEST IT TAB -->
   <div id="test-content" class="hidden max-w-screen-xl mx-auto px-6 pb-20">
     <div class="glass border border-white/10 rounded-3xl p-8">
       <div class="flex items-center justify-between mb-8">
@@ -222,7 +214,6 @@
       </div>
     </div>
 
-    <!-- Deposit Options -->
     <div class="mt-8 glass border border-white/10 rounded-3xl p-8">
       <div class="font-semibold text-xl mb-4">Deposit Options</div>
       <div class="grid md:grid-cols-2 gap-4">
@@ -278,42 +269,35 @@
     }
 
     async function connectWallet() {
-      // Prefer MetaMask / EVM provider
-      let provider = window.ethereum;
-
-      if (!provider) {
-        alert('No EVM wallet detected. Please install MetaMask.');
-        return;
-      }
-
-      // If multiple providers exist, prefer MetaMask
-      if (window.ethereum.providers) {
-        provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum;
-      }
-
-      if (!provider.isMetaMask) {
-        const useAnyway = confirm(
-          'Non-EVM wallet detected (possibly Argent X or Starknet wallet).\n\n' +
-          'Vortex requires an EVM wallet (MetaMask recommended).\n\n' +
-          'Click OK to try anyway, or Cancel to install MetaMask.'
-        );
-        if (!useAnyway) return;
-      }
-
       try {
+        // Get the best available EVM provider
+        let provider = null;
+
+        if (window.ethereum) {
+          if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+            provider = window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
+          } else {
+            provider = window.ethereum;
+          }
+        }
+
+        if (!provider) {
+          alert('No EVM wallet found. Please install MetaMask.');
+          return;
+        }
+
+        // Request connection
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
+        
         document.getElementById('connect-text').innerHTML = 
           connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
 
+        // Add/Switch to Ritual
         const ritualChain = {
           chainId: '0x7bb',
           chainName: 'Ritual Testnet',
-          nativeCurrency: {
-            name: 'Ritual',
-            symbol: 'RITUAL',
-            decimals: 18
-          },
+          nativeCurrency: { name: 'Ritual', symbol: 'RITUAL', decimals: 18 },
           rpcUrls: ['https://rpc.ritualfoundation.org'],
           blockExplorerUrls: ['https://explorer.ritualfoundation.org']
         };
@@ -323,8 +307,8 @@
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: ritualChain.chainId }]
           });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
+        } catch (switchErr) {
+          if (switchErr.code === 4902) {
             await provider.request({
               method: 'wallet_addEthereumChain',
               params: [ritualChain]
@@ -334,22 +318,16 @@
               params: [{ chainId: ritualChain.chainId }]
             });
           } else {
-            throw switchError;
+            throw switchErr;
           }
         }
 
-        console.log('%c[Wallet] Connected to Ritual testnet via EVM wallet', 'color:#22c55e');
+        console.log('%c[Wallet] Successfully connected to Ritual', 'color:#22c55e');
         await refreshState();
 
       } catch (err) {
-        console.error('Wallet connection error:', err);
-        
-        let message = 'Failed to connect wallet.';
-        if (err.code === 4001) message = 'Connection rejected by user.';
-        else if (err.code === 4902) message = 'Failed to add Ritual network.';
-        else if (err.message) message = err.message;
-        
-        alert(message);
+        console.error('Full wallet error:', err);
+        alert('Error: ' + (err.message || err.code || 'Unknown error'));
       }
     }
 
