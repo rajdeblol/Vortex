@@ -284,51 +284,65 @@
       }
 
       try {
+        // Request accounts first
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         connectedAccount = accounts[0];
         document.getElementById('connect-text').innerHTML = 
           connectedAccount.slice(0, 6) + '...' + connectedAccount.slice(-4);
 
-        // Add Ritual testnet if it doesn't exist, then switch
-        const ritualChainId = '0x7bb'; // 1979
+        const ritualChain = {
+          chainId: '0x7bb',                    // 1979
+          chainName: 'Ritual Testnet',
+          nativeCurrency: {
+            name: 'Ritual',
+            symbol: 'RITUAL',
+            decimals: 18
+          },
+          rpcUrls: ['https://rpc.ritualfoundation.org'],
+          blockExplorerUrls: ['https://explorer.ritualfoundation.org']
+        };
 
+        // Try switching first
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: ritualChainId }],
+            params: [{ chainId: ritualChain.chainId }]
           });
+          console.log('%c[Wallet] Switched to Ritual successfully', 'color:#22c55e');
         } catch (switchError) {
           if (switchError.code === 4902) {
-            // Chain not added yet
+            // Chain not added yet → add it
+            console.log('%c[Wallet] Ritual chain not found. Adding now...', 'color:#eab308');
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: ritualChainId,
-                chainName: 'Ritual Testnet',
-                nativeCurrency: {
-                  name: 'Ritual',
-                  symbol: 'RITUAL',
-                  decimals: 18
-                },
-                rpcUrls: [RITUAL_RPC],
-              }],
+              params: [ritualChain]
             });
-            // Try switching again
+            // Switch after adding
             await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: ritualChainId }],
+              params: [{ chainId: ritualChain.chainId }]
             });
+            console.log('%c[Wallet] Ritual chain added and switched', 'color:#22c55e');
           } else {
             throw switchError;
           }
         }
-        
-        console.log('Connected to Ritual testnet');
+
+        console.log('%c[Wallet] Connected to Ritual testnet', 'color:#22c55e');
         await refreshState();
-        
+
       } catch (err) {
         console.error('Wallet connection error:', err);
-        alert('Failed to connect wallet. Check console for details.');
+        
+        // Show more helpful message
+        let message = 'Failed to connect wallet.';
+        if (err.code === 4001) {
+          message = 'Connection rejected by user.';
+        } else if (err.message?.includes('already pending')) {
+          message = 'A connection request is already pending. Check your wallet.';
+        }
+        
+        alert(message + ' Check the console for details.');
       }
     }
 
